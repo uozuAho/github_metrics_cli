@@ -1,4 +1,6 @@
-# GitHub PR metrics reader thingo
+# GitHub PR metrics printer
+
+Print metrics from GitHub, such as time to approve & merge PRs.
 
 # Prerequisites
 - node 16
