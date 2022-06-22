@@ -45,8 +45,8 @@ function printCsv(prs: PrInfo[]) {
   const formattedPrs = prs.map(p => ({
     title: p.title,
     created: p.created.toISOString(),
-    merged: p.merged,
-    // todo: first approval
+    firstApproved: p.firstApprovalAt ? p.firstApprovalAt.toISOString() : null,
+    merged: p.merged ? p.merged.toISOString() : null,
   }));
   stringify(formattedPrs, {header: true}).pipe(process.stdout);
 }

@@ -3,12 +3,13 @@ import { request, gql } from 'graphql-request';
 export interface PrInfo {
   title: string;
   created: Date;
+  firstApprovalAt: Date | null;
   merged: Date | null;
   reviews: ReviewInfo[];
 }
 
 export interface ReviewInfo {
-  state: string,
+  state: ReviewState,
   createdAt: Date
 }
 
@@ -20,7 +21,7 @@ export async function loadPrs(
   const query = gql`
     query {
       repository(name:"${name}", owner: "${owner}") {
-        pullRequests(last:5) {
+        pullRequests(last:50) {
           edges {
             node {
               title,
@@ -52,13 +53,26 @@ export async function loadPrs(
   return prs.map(p => prNodeToPrInfo(p));
 }
 
+function firstApprovalDate(reviews: ReviewInfo[]): Date | null {
+  const approvalsByDateAscending = [...reviews.filter(r => r.state === "APPROVED")];
+  approvalsByDateAscending.sort((a, b) => a.createdAt.getDate() - b.createdAt.getDate());
+
+  if (approvalsByDateAscending.length === 0) {
+    return null;
+  }
+  return approvalsByDateAscending[0].createdAt;
+}
+
 function prNodeToPrInfo(node: PrNode): PrInfo {
   const n = node.node;
+  const reviews = n.reviews.edges.map(r => reviewNodeToReviewInfo(r));
+
   return {
     title: n.title,
     created: new Date(n.createdAt),
+    firstApprovalAt: firstApprovalDate(reviews),
     merged: n.mergedAt ? new Date(n.mergedAt) : null,
-    reviews: n.reviews.edges.map(r => reviewNodeToReviewInfo(r))
+    reviews
   };
 }
 
@@ -82,7 +96,15 @@ interface PrNode {
 
 interface ReviewNode {
   node: {
-    state: string,
+    state: ReviewState,
     createdAt: string
   }
 }
+
+// https://docs.github.com/en/graphql/reference/enums#pullrequestreviewstate
+type ReviewState =
+  "APPROVED" |
+  "CHANGES_REQUESTED" |
+  "COMMENTED" |
+  "DISMISSED" |
+  "PENDING";
