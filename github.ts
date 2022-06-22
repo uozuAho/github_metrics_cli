@@ -4,7 +4,9 @@ export interface PrInfo {
   title: string;
   created: Date;
   firstApprovalAt: Date | null;
+  hoursToFirstApproval: number | null;
   merged: Date | null;
+  hoursFromApprovedToMerged: number | null;
   reviews: ReviewInfo[];
 }
 
@@ -65,13 +67,26 @@ function firstApprovalDate(reviews: ReviewInfo[]): Date | null {
 
 function prNodeToPrInfo(node: PrNode): PrInfo {
   const n = node.node;
+  const created = new Date(n.createdAt);
   const reviews = n.reviews.edges.map(r => reviewNodeToReviewInfo(r));
+  const firstApprovalAt = firstApprovalDate(reviews);
+  const merged = n.mergedAt ? new Date(n.mergedAt) : null;
+
+  const hoursToFirstApproval = firstApprovalAt
+    ? (firstApprovalAt.getTime() - created.getTime()) / 1000 / 3600
+    : null;
+
+  const hoursFromApprovedToMerged = firstApprovalAt && merged
+    ? (merged.getTime() - firstApprovalAt.getTime()) / 1000 / 3600
+    : null;
 
   return {
     title: n.title,
-    created: new Date(n.createdAt),
-    firstApprovalAt: firstApprovalDate(reviews),
-    merged: n.mergedAt ? new Date(n.mergedAt) : null,
+    created,
+    firstApprovalAt,
+    hoursToFirstApproval,
+    merged,
+    hoursFromApprovedToMerged,
     reviews
   };
 }

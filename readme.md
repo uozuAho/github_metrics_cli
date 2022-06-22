@@ -20,6 +20,3 @@ npm start -- --help
 # get stats for a repo
 npm start -- -r my-org/my-repo
 ```
-
-# to do
-- inline todos

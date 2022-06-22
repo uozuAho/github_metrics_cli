@@ -47,6 +47,8 @@ function printCsv(prs: PrInfo[]) {
     created: p.created.toISOString(),
     firstApproved: p.firstApprovalAt ? p.firstApprovalAt.toISOString() : null,
     merged: p.merged ? p.merged.toISOString() : null,
+    hoursToFirstApproval: p.hoursToFirstApproval,
+    hoursFromApprovedToMerged: p.hoursFromApprovedToMerged
   }));
   stringify(formattedPrs, {header: true}).pipe(process.stdout);
 }
