@@ -4,16 +4,17 @@ import * as buildkite from './buildkite';
 
 import { ArgumentParser } from 'argparse';
 import { BkmOptions } from './bkm';
+import { loadPrs } from './github';
 
 async function main() {
   const options = parseCliOptions();
-  const buildkiteToken = loadBuildkiteToken();
+  const githubToken = loadGitHubToken();
 
-  run(options, buildkiteToken);
+  run(options, githubToken);
 }
 
 interface CliOptions {
-  pipeline: string;
+  repo: string;
   format: string;
   filter: string | null;
   date_from: string | null;
@@ -24,8 +25,8 @@ function parseCliOptions(): CliOptions {
     description: 'Buildkite metrics printer'
   });
 
-  parser.add_argument('-p', '--pipeline', {
-    help: 'pipeline name',
+  parser.add_argument('-r', '--repo', {
+    help: 'repo, eg. my_org/my_repo',
     required: true,
   });
   parser.add_argument('--filter', {
@@ -43,36 +44,38 @@ function parseCliOptions(): CliOptions {
   return parser.parse_args();
 }
 
-function cliToBkmOptions(cliOptions: CliOptions): BkmOptions {
-  return {
-    ...cliOptions,
-    dateFrom: cliOptions.date_from ? new Date(cliOptions.date_from) : null
-  };
+// function cliToBkmOptions(cliOptions: CliOptions): BkmOptions {
+//   return {
+//     ...cliOptions,
+//     dateFrom: cliOptions.date_from ? new Date(cliOptions.date_from) : null
+//   };
+// }
+
+async function run(options: CliOptions, githubToken: string) {
+  // const bkmOptions = cliToBkmOptions(options);
+  await loadPrs(options.repo, githubToken);
+  // const builds = await bkm.loadBuilds(bkmOptions, githubToken);
+
+  // switch (options.format) {
+  //   case 'summary': {
+  //     console.log(builds.summary);
+  //     break;
+  //   }
+  //   case 'csv': {
+  //     printCsv(builds.builds);
+  //     break;
+  //   }
+  //   default:
+  //     throw new Error(`unknown format '${options.format}'`);
+  // }
 }
 
-async function run(options: CliOptions, buildkiteToken: string) {
-  const bkmOptions = cliToBkmOptions(options);
-  const builds = await bkm.loadBuilds(bkmOptions, buildkiteToken);
-
-  switch (options.format) {
-    case 'summary': {
-      console.log(builds.summary);
-      break;
-    }
-    case 'csv': {
-      printCsv(builds.builds);
-      break;
-    }
-    default:
-      throw new Error(`unknown format '${options.format}'`);
+function loadGitHubToken() {
+  if (!process.env.GITHUB_GRAPHQL_TOKEN) {
+    throw new Error('GITHUB_GRAPHQL_TOKEN not set');
   }
-}
-
-function loadBuildkiteToken() {
-  if (!process.env.BUILDKITE_GRAPHQL_TOKEN) {
-    throw new Error('BUILDKITE_GRAPHQL_TOKEN not set');
-  }
-  return process.env.BUILDKITE_GRAPHQL_TOKEN;
+  console.log('token', process.env.GITHUB_GRAPHQL_TOKEN);
+  return process.env.GITHUB_GRAPHQL_TOKEN;
 }
 
 function printCsv(builds: buildkite.BuildInfo[]) {
