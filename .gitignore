@@ -3,3 +3,4 @@ secrets.env
 *.csv
 *.xlsx
 .env
+.idea
