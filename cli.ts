@@ -29,7 +29,8 @@ function parseCliOptions(): CliOptions {
 }
 
 async function run(options: CliOptions, githubToken: string) {
-  await loadPrs(options.repo, githubToken);
+  const prs = await loadPrs(options.repo, githubToken);
+  console.log(prs);
 }
 
 function loadGitHubToken() {
