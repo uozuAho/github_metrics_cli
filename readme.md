@@ -20,3 +20,6 @@ npm start -- --help
 # get stats for a repo
 npm start -- -r my-org/my-repo
 ```
+
+# to do
+- show PRs as csv

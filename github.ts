@@ -5,7 +5,6 @@ export async function loadPrs(
   apiToken: string)
 {
   const [owner, name] = repo.split('/');
-  console.log(`repository(name:"${name}", owner: "${owner}")`);
   const query = gql`
     query {
       repository(name:"${name}", owner: "${owner}") {
