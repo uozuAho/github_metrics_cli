@@ -1,16 +1,20 @@
 import { request, gql } from 'graphql-request';
 
 export interface PrInfo {
-
+  title: string;
+  created: Date;
+  merged: Date | null;
+  reviews: ReviewInfo[];
 }
 
 export interface ReviewInfo {
-
+  state: string,
+  createdAt: Date
 }
 
 export async function loadPrs(
   repo: string,
-  apiToken: string): Promise<PrInfo>
+  apiToken: string): Promise<PrInfo[]>
 {
   const [owner, name] = repo.split('/');
   const query = gql`
@@ -42,8 +46,6 @@ export async function loadPrs(
     document: query,
     requestHeaders: {'Authorization': `Bearer ${apiToken}`}
   });
-
-  console.log(JSON.stringify(nextPage, null, 2));
 
   const prs = nextPage.repository.pullRequests.edges as PrNode[];
 
