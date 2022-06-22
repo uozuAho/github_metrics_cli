@@ -1,5 +1,6 @@
 import { ArgumentParser } from 'argparse';
-import { loadPrs } from './github';
+import { stringify } from 'csv';
+import { loadPrs, PrInfo } from './github';
 
 async function main() {
   const options = parseCliOptions();
@@ -30,7 +31,7 @@ function parseCliOptions(): CliOptions {
 
 async function run(options: CliOptions, githubToken: string) {
   const prs = await loadPrs(options.repo, githubToken);
-  console.log(prs);
+  printCsv(prs);
 }
 
 function loadGitHubToken() {
@@ -38,6 +39,16 @@ function loadGitHubToken() {
     throw new Error('GITHUB_GRAPHQL_TOKEN not set');
   }
   return process.env.GITHUB_GRAPHQL_TOKEN;
+}
+
+function printCsv(prs: PrInfo[]) {
+  const formattedPrs = prs.map(p => ({
+    title: p.title,
+    created: p.created.toISOString(),
+    merged: p.merged,
+    // todo: first approval
+  }));
+  stringify(formattedPrs, {header: true}).pipe(process.stdout);
 }
 
 main();

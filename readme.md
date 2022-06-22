@@ -22,4 +22,4 @@ npm start -- -r my-org/my-repo
 ```
 
 # to do
-- show PRs as csv
+- inline todos
